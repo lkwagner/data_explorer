@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Dashboard</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@3.3.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@3"></script>
+    <script src="https://vega.github.io/datalib/datalib.min.js"></script>
+
+    <link href="https://unpkg.com/tabulator-tables@4.5.3/dist/css/tabulator.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.5.3/dist/js/tabulator.min.js"></script>
+
+    <style>hr, h3 {padding-bottom: 20px;}canvas {background-color: #fffff;}</style>
+  </head>
+  <body>
+
+    <div class="container">
+
+      <div class = "jumbotron">
+          <h1> Data thingy </h1>
+          <a href="/"> Table </a> / 
+          <a href="/summary"> Summary </a>
+      </div>
+
+      <div id="example-table"></div>
+      <button type="submit" class="btn btn-primary" onclick="doFunction();">Detailed view of selected runs</button>
+
+      <!-- Render charts -->
+
+      {% for key, value in charts.items() %} 
+        <h1 class = "text-muted"> {{ value.text }}</h1>
+        <div id="vis{{ key }}"> </div>
+        <script type="text/javascript">
+            var spec = {{ value.json|safe }};
+            vegaEmbed("#vis{{ key }}",spec).then(function(result){
+  }).catch(console.error);
+</script> 
+      {% endfor %}
+
+    </div>
+
+    <!-- Table -->
+
+    <script type="text/javascript">
+        var table = new Tabulator("#example-table", {
+            height:400, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+            layout:"fitColumns", //fit columns to width of table (optional)
+            selectable: 10,
+
+            columns:[ //Define Table Columns
+                {title:"uuid", field:"uuid"},
+                {title:"nconfig", field:"nconfig",
+                headerFilter:"select", headerFilterParams:{values:true}},
+                {title:"steprange", field:"steprange",
+                headerFilter:"select", headerFilterParams:{values:true}},
+                {title:"npts", field:"npts",
+                headerFilter:"select", headerFilterParams:{values:true}},
+                {title:"energy", field:"energy"},
+                {title:"energy_error", field:"energy_error"},
+                {title:"iteration", field:"iteration"},
+            ],
+        });
+        table.setData({{ data|safe }});
+        function doFunction() { 
+                var uuids = table.getSelectedData();
+                var text = "/query?";
+                //print(uuids);
+                for(i = 0; i< uuids.length; i++) {
+                    text+= "uuid" + i + '=' + uuids[i].uuid + "&";
+                }
+                window.open(text, "_blank");
+
+            }
+    </script>
+
+  </body>
+</html>
