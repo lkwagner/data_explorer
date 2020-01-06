@@ -43,6 +43,13 @@ def timeseries(df):
         emin = "datum.energy-datum.energy_error",
         emax = "datum.energy+datum.energy_error"
     )
+    errorbars = base.mark_errorbar().encode(
+        x="iteration",
+        y="emin:Q",
+        y2="emax:Q",
+        color = "uuid:N"
+    )
+
     chart = (
         base
         .encode(
@@ -53,13 +60,7 @@ def timeseries(df):
         )
         .properties(width=500, height=500)
     )
-    errorbars = base.mark_errorbar().encode(
-        x="iteration",
-        y="emin:Q",
-        y2="emax:Q",
-        color = "uuid:N"
-    )
-    return (chart.mark_circle(size=200) + chart.mark_line()+errorbars).interactive()
+    return (errorbars + chart.mark_circle(size=200) + chart.mark_line()).interactive()
 
 if __name__ == "__main__":
     df = generate_dataframe()
